@@ -20,6 +20,7 @@ $ico.DownloadFile("https://raw.githubusercontent.com/ChrisMogis/O365-ManageCalen
 
 #Variables
 $ServiceName = "IntuneManagementExtension"
+$PingTest = "172.1.1.1"
 $Favico = "C:\Users\Default\AppData\Local\ToolsPS\favicon-image.ico"
 
 #Listbox
@@ -75,12 +76,19 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 #List of Actions
 if ($Action -eq 'Test Internet Connectivity')
     {
-        PING.EXE 8.8.4.4 | Out-GridView -Title 'Test Internet Connectivity'       
+        if($Ping = Test-Connection $PingTest -Count 1 -Quiet) 
+            {
+                [void] [System.Windows.MessageBox]::Show("Connectivity OK", "Internet connectivity test", "OK", "Information")
+            }
+        else 
+            {
+                [void] [System.Windows.MessageBox]::Show("Your internet connection have an issue, please contact your Administrator", "Internet connectivity test", "OK", "Error")
+            }
     }
 
 if ($Action -eq 'Clear DNS Cache')
     {
-        Start-Process powershell.exe "Clear-DnsClientCache"
+        Start-Process powershell "Clear-DnsClientCache"
             Start-Sleep -s 5
         [void] [System.Windows.MessageBox]::Show( "Your DNS cache has been reinitialized", "DNS cache reseted", "OK", "Information" )
     }
