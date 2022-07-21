@@ -18,6 +18,10 @@ $ico.DownloadFile("https://raw.githubusercontent.com/ChrisMogis/O365-ManageCalen
 # Create Log Folder
     CreateCCMTuneFolder
 
+#Variables
+$ServiceName = "IntuneManagementExtension"
+$Favico = "C:\Users\Default\AppData\Local\ToolsPS\favicon-image.ico"
+
 #Listbox
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
@@ -26,7 +30,7 @@ $form = New-Object System.Windows.Forms.Form
 $form.Text = 'User Assistant'
 $form.Size = New-Object System.Drawing.Size(500,300)
 $form.StartPosition = 'CenterScreen'
-$form.Icon = "C:\Users\Default\AppData\Local\ToolsPS\favicon-image.ico"
+$form.Icon = $Favico
 
 $okButton = New-Object System.Windows.Forms.Button
 $okButton.Location = New-Object System.Drawing.Point(200,190)
@@ -47,12 +51,13 @@ $listBox.Location = New-Object System.Drawing.Point(10,50)
 $listBox.Size = New-Object System.Drawing.Size(455,40)
 $listBox.FontSize = 12
 $listBox.Height = 130
-$listBox.Font = New-Object System.Drawing.Font("lucida Console",12,[System.Drawing.FontStyle]::Regular)
+$listBox.Font = New-Object System.Drawing.Font("Lucida Console",12,[System.Drawing.FontStyle]::Regular)
 
 [void] $listBox.Items.Add('Test Internet Connectivity')
 [void] $listBox.Items.Add('Clear DNS Cache')
 [void] $listBox.Items.Add('Reset Network Configuration')
-[void] $listBox.Items.Add('Remote Control')
+[void] $listBox.Items.Add('Restart Microsoft Intune service')
+[void] $listBox.Items.Add('Launch Remote Control')
 [void] $listBox.Items.Add('Launch Antivirus Quick Scan')
 [void] $listBox.Items.Add('Launch Antivirus Full Scan')
 
@@ -70,25 +75,43 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 #List of Actions
 if ($Action -eq 'Test Internet Connectivity')
     {
-        PING.EXE 8.8.4.4 | Out-GridView -Title 'Ping Test'       
+        PING.EXE 8.8.4.4 | Out-GridView -Title 'Test Internet Connectivity'       
     }
 
 if ($Action -eq 'Clear DNS Cache')
     {
-       powershell.exe Clear-DnsClientCache
-       Start-Sleep -s "5"
-       [void] [System.Windows.MessageBox]::Show( "Your DNS cache has been reinitialized", "DNS cache reseted", "OK", "Information" )
+        Start-Process powershell.exe "Clear-DnsClientCache"
+            Start-Sleep -s 5
+        [void] [System.Windows.MessageBox]::Show( "Your DNS cache has been reinitialized", "DNS cache reseted", "OK", "Information" )
     }
 
 if ($Action -eq 'Reset Network Configuration')
     {
-        ipconfig /release
-        ipconfig /renew
-        Start-Sleep -s "5"
-        [void] [System.Windows.MessageBox]::Show( "Your network configuration has been reseted", "DNS cache reseted", "OK", "Information" )
+        Start-Process powershell "ipconfig /release"
+        Start-Process powershell "ipconfig /renew"
+            Start-Sleep -s 5
+        [void] [System.Windows.MessageBox]::Show( "Your network configuration has been reseted", "Network configuration reseted", "OK", "Information" )
     }
 
-if ($Action -eq 'Remote Control')
+if ($Action -eq 'Restart Microsoft Intune service')
+    {
+        Start-Process powershell "Net stop IntuneManagementExtension"
+            Start-Sleep -s 5
+        Start-Process powershell "Net start IntuneManagementExtension"
+            Start-Sleep -s 5
+        #Check service status
+        $Service = Get-Service | Where-Object { $_.Name -eq $serviceName }
+        if ($service.status -eq "Stopped")
+            {
+            [void] [System.Windows.MessageBox]::Show( "$($ServiceName) is not restarted, please contact your Administrator","Windows Intune Service", "OK", "Error" )
+            }
+        else 
+            {       
+            [void] [System.Windows.MessageBox]::Show( "$($ServiceName) is started","Windows Intune Service", "OK", "Information" )
+            }
+    }
+
+if ($Action -eq 'Launch Remote Control')
     {
         [system.Diagnostics.Process]::start("msra.exe")
     }
@@ -96,11 +119,13 @@ if ($Action -eq 'Remote Control')
 if ($Action -eq 'Launch Antivirus Quick Scan')
     {
         Start-Process powershell "Start-Mpscan -ScanType QuickScan"
+        [void] [System.Windows.MessageBox]::Show( "Windows Defender Quick Scan is finished", "Windows Defender Quick Scan", "OK", "Information" )
     }
 
 if ($Action -eq 'Launch Antivirus Full Scan')
     {
         Start-Process powershell "Start-Mpscan -ScanType FullScan"
+        [void] [System.Windows.MessageBox]::Show( "Windows Defender Full Scan is finished", "Windows Defender Full Scan", "OK", "Information" )
     }
 }
 
