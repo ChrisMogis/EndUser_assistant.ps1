@@ -1,5 +1,5 @@
 # Function create Log folder
-    Function CreateLogsFolder
+    Function CreateCCMTuneFolder
 {
     If(!(Test-Path "C:\Users\Default\AppData\Local\Tools_CCMTune\"))
     {
@@ -16,7 +16,7 @@ $ico = new-object System.Net.WebClient
 $ico.DownloadFile("https://raw.githubusercontent.com/ChrisMogis/O365-ManageCalendarPermissions/main/favicon-image.ico","C:\Users\Default\AppData\Local\ToolsPS\favicon-image.ico")
 
 # Create Log Folder
-    CreateLogsFolder
+    CreateCCMTuneFolder
 
 #Listbox
 Add-Type -AssemblyName System.Windows.Forms
@@ -104,4 +104,4 @@ if ($Action -eq 'Launch Antivirus Full Scan')
     }
 }
 
-[void] [System.Windows.MessageBox]::Show( "Thank you for using this tool", "Thx", "OK", "Information")
+[void] [System.Windows.MessageBox]::Show("Thank you for using this tool", "Thx", "OK", "Information")
