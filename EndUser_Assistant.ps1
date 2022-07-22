@@ -11,31 +11,26 @@
     }
 }
 
-#Set Powershell Execution policy
-Set-ExecutionPolicy RemoteSigned -Force
-
 #Install CCMTune Favicon
-New-Item "C:\Users\Default\AppData\Local\ToolsPS" -itemType Directory
-$ico = new-object System.Net.WebClient
-$ico.DownloadFile("https://raw.githubusercontent.com/ChrisMogis/O365-ManageCalendarPermissions/main/favicon-image.ico","C:\Users\Default\AppData\Local\ToolsPS\favicon-image.ico")
+Invoke-WebRequest "https://raw.githubusercontent.com/ChrisMogis/O365-ManageCalendarPermissions/main/favicon-image.ico" -Outfile "C:\Users\Default\AppData\Local\Tools_CCMTune\favicon-image.ico"
 
 # Create Log Folder
 CreateCCMTuneFolder
 
 #Variables
 $ServiceName = "IntuneManagementExtension"
-$PingTest = "8.8.4.4"
-$Favico = "C:\Users\Default\AppData\Local\ToolsPS\favicon-image.ico"
+$Ico = "C:\Users\Default\AppData\Local\ToolsPS\favicon-image.ico"
 
 #Listbox
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
+Add-Type -AssemblyName PresentationFramework
 
 $form = New-Object System.Windows.Forms.Form
 $form.Text = 'User Assistant'
 $form.Size = New-Object System.Drawing.Size(500,300)
 $form.StartPosition = 'CenterScreen'
-$form.Icon = $Favico
+$form.Icon = $Ico
 
 $okButton = New-Object System.Windows.Forms.Button
 $okButton.Location = New-Object System.Drawing.Point(200,190)
@@ -54,9 +49,8 @@ $form.Controls.Add($label)
 $listBox = New-Object System.Windows.Forms.ListBox
 $listBox.Location = New-Object System.Drawing.Point(10,50)
 $listBox.Size = New-Object System.Drawing.Size(455,40)
-$listBox.FontSize = 12
+#$listBox.FontSize = 10
 $listBox.Height = 130
-$listBox.Font = New-Object System.Drawing.Font("Lucida Console",12,[System.Drawing.FontStyle]::Regular)
 
 [void] $listBox.Items.Add('Test Internet Connectivity')
 [void] $listBox.Items.Add('Clear DNS Cache')
@@ -79,16 +73,17 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 
 #List of Actions
 if ($Action -eq 'Test Internet Connectivity')
-    {
-        if(Test-Connection $PingTest -Count 1 -Quiet) 
-            {
-                [void] [System.Windows.MessageBox]::Show("Connectivity OK", "Internet connectivity test", "OK", "Information")
-            }
-        else 
-            {
-                [void] [System.Windows.MessageBox]::Show("Your internet connection have an issue, please contact your Administrator", "Internet connectivity test", "OK", "Error")
-            }
-    }
+{
+$Ping = Test-Connection "8.8.4.4" -Count 1 -Quiet
+if ($Ping -eq 'True')
+        { 
+        [void][System.Windows.MessageBox]::Show("OK","Thx","OK","Information")
+        }
+    else 
+        {
+        [void][System.Windows.MessageBox]::Show("NOK","Thx","OK","Information")
+        }
+}
 
 if ($Action -eq 'Clear DNS Cache')
     {
@@ -131,14 +126,10 @@ if ($Action -eq 'Launch Remote Control')
 if ($Action -eq 'Launch Antivirus Quick Scan')
     {
         Start-Process powershell "Start-Mpscan -ScanType QuickScan"
-        [void] [System.Windows.MessageBox]::Show( "Windows Defender Quick Scan is finished", "Windows Defender Quick Scan", "OK", "Information" )
     }
 
 if ($Action -eq 'Launch Antivirus Full Scan')
     {
         Start-Process powershell "Start-Mpscan -ScanType FullScan"
-        [void] [System.Windows.MessageBox]::Show( "Windows Defender Full Scan is finished", "Windows Defender Full Scan", "OK", "Information" )
     }
 }
-
-[void] [System.Windows.MessageBox]::Show("Thank you for using this tool", "Thx", "OK", "Information")
