@@ -1,25 +1,12 @@
-# Function create Log folder
-    Function CreateCCMTuneFolder
-{
-    If(!(Test-Path "C:\Users\Default\AppData\Local\Tools_CCMTune\"))
-    {
-    New-Item -Force -Path "C:\Users\Default\AppData\Local\Tools_CCMTune\" -ItemType Directory
-		}
-		else 
-		{ 
-    Write-Host "The folder Tools_CCMTune already exists !"
-    }
-}
+#Create Tools Directory
+New-Item -Force -Path "C:\Users\Default\AppData\Local\Tools_CCMTune\" -ItemType Directory
 
 #Install CCMTune Favicon
 Invoke-WebRequest "https://raw.githubusercontent.com/ChrisMogis/O365-ManageCalendarPermissions/main/favicon-image.ico" -Outfile "C:\Users\Default\AppData\Local\Tools_CCMTune\favicon-image.ico"
 
-# Create Log Folder
-CreateCCMTuneFolder
-
 #Variables
 $ServiceName = "IntuneManagementExtension"
-$Ico = "C:\Users\Default\AppData\Local\ToolsPS\favicon-image.ico"
+$Ico = "C:\Users\Default\AppData\Local\Tools_CCMTune\favicon-image.ico"
 
 #Listbox
 Add-Type -AssemblyName System.Windows.Forms
