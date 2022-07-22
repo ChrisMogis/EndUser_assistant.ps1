@@ -10,17 +10,21 @@
     Write-Host "The folder Tools_CCMTune already exists !"
     }
 }
+
+#Set Powershell Execution policy
+Set-ExecutionPolicy RemoteSigned -Force
+
 #Install CCMTune Favicon
 New-Item "C:\Users\Default\AppData\Local\ToolsPS" -itemType Directory
 $ico = new-object System.Net.WebClient
 $ico.DownloadFile("https://raw.githubusercontent.com/ChrisMogis/O365-ManageCalendarPermissions/main/favicon-image.ico","C:\Users\Default\AppData\Local\ToolsPS\favicon-image.ico")
 
 # Create Log Folder
-    CreateCCMTuneFolder
+CreateCCMTuneFolder
 
 #Variables
 $ServiceName = "IntuneManagementExtension"
-$PingTest = "172.1.1.1"
+$PingTest = "8.8.4.4"
 $Favico = "C:\Users\Default\AppData\Local\ToolsPS\favicon-image.ico"
 
 #Listbox
@@ -76,7 +80,7 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 #List of Actions
 if ($Action -eq 'Test Internet Connectivity')
     {
-        if($Ping = Test-Connection $PingTest -Count 1 -Quiet) 
+        if(Test-Connection $PingTest -Count 1 -Quiet) 
             {
                 [void] [System.Windows.MessageBox]::Show("Connectivity OK", "Internet connectivity test", "OK", "Information")
             }
