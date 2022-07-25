@@ -1,12 +1,15 @@
 #Create Tools Directory
-New-Item -Force -Path "C:\Users\Default\AppData\Local\Tools_CCMTune\" -ItemType Directory
+New-Item -Force -Path "C:\Tools_CCMTune\Tools" -ItemType Directory
+New-Item -Force -Path "C:\Tools_CCMTune\Logs" -ItemType Directory
 
 #Install CCMTune Favicon
-Invoke-WebRequest "https://raw.githubusercontent.com/ChrisMogis/O365-ManageCalendarPermissions/main/favicon-image.ico" -Outfile "C:\Users\Default\AppData\Local\Tools_CCMTune\favicon-image.ico"
+Invoke-WebRequest "https://raw.githubusercontent.com/ChrisMogis/O365-ManageCalendarPermissions/main/favicon-image.ico" -Outfile "C:\Tools_CCMTune\Tools\favicon-image.ico"
 
 #Variables
+$Date = Get-Date
+$Logs = "C:\Tools_CCMTune\Logs\EndUserAssistant.log"
 $ServiceName = "IntuneManagementExtension"
-$Ico = "C:\Users\Default\AppData\Local\Tools_CCMTune\favicon-image.ico"
+$Ico = "C:\Tools_CCMTune\Tools\favicon-image.ico"
 
 #Listbox
 Add-Type -AssemblyName System.Windows.Forms
@@ -27,6 +30,17 @@ $okButton.DialogResult = [System.Windows.Forms.DialogResult]::OK
 $form.AcceptButton = $okButton
 $form.Controls.Add($okButton)
 
+$LinkLabel = New-Object System.Windows.Forms.LinkLabel
+#$linkLabel.AutoSize = "True"
+$LinkLabel.Location = New-Object System.Drawing.Point(10,240)
+$LinkLabel.Size = New-Object System.Drawing.Size(280,20)
+$LinkLabel.Font = $font
+$LinkLabel.LinkColor = "BLUE"
+$LinkLabel.ActiveLinkColor = "RED"
+$LinkLabel.Text = "CCMTune.fr"
+$LinkLabel.add_Click({[system.Diagnostics.Process]::start("https://ccmtune.fr")})
+$Form.Controls.Add($LinkLabel)
+
 $label = New-Object System.Windows.Forms.Label
 $label.Location = New-Object System.Drawing.Point(10,20)
 $label.Size = New-Object System.Drawing.Size(280,20)
@@ -39,6 +53,7 @@ $listBox.Size = New-Object System.Drawing.Size(455,40)
 #$listBox.FontSize = 10
 $listBox.Height = 130
 
+[void] $listBox.Items.Add('Computer Information')
 [void] $listBox.Items.Add('Test Internet Connectivity')
 [void] $listBox.Items.Add('Clear DNS Cache')
 [void] $listBox.Items.Add('Reset Network Configuration')
@@ -51,20 +66,89 @@ $form.Controls.Add($listBox)
 
 $form.Topmost = $true
 
-$result = $form.ShowDialog()
+$result = $form.ShowDialog() 
 
 if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 {
     $Action = $listBox.SelectedItem
     $Action
+    Write-Output "$($Date) : $($Action)" | Tee-Object -FilePath $Logs -Append
 
 #List of Actions
-if ($Action -eq 'Test Internet Connectivity')
+if ($Action -eq 'Computer Information')
+    {
+        Add-Type -AssemblyName System.Windows.Forms
+        Add-Type -AssemblyName System.Drawing
+        
+        $font = New-Object System.Drawing.Font("Time New Roman", 9)
+        $form = New-Object System.Windows.Forms.Form
+        $form.Text = 'Computer-Info'
+        $form.Size = New-Object System.Drawing.Size(345,245)
+        $form.StartPosition = 'CenterScreen'
+        $form.Icon = $Ico
+         
+        $OKButton = New-Object System.Windows.Forms.Button
+        $OKButton.Location = New-Object System.Drawing.Point(120,150)
+        $OKButton.Size = New-Object System.Drawing.Size(75,23)
+        $OKButton.Text = 'OK'
+        $OKButton.TextAlign = 'MiddleCenter'
+        $OKButton.DialogResult = [System.Windows.Forms.DialogResult]::OK
+        $form.AcceptButton = $OKButton
+        $form.Controls.Add($OKButton)
+                 
+        $hostn = New-Object System.Windows.Forms.Label
+        #$hostn.AutoSize = "True"
+        $hostn.Location = New-Object System.Drawing.Point(10,10)
+        $hostn.Size = New-Object System.Drawing.Size(280,20)
+        $hostn.Font = $font
+        $hostn.Text = "Computer Name : $(hostname)"
+        $form.Controls.Add($hostn)
+         
+        $os = New-Object System.Windows.Forms.Label
+        #$os.AutoSize = "True"
+        $os.Location = New-Object System.Drawing.Point(10,90)
+        $os.Size = New-Object System.Drawing.Size(280,20)
+        $os.Font = $font
+        $os.Text = "OS: $((Get-CimInstance win32_operatingsystem).Caption.Trimstart('Microsoft '))"
+        $form.Controls.Add($os)
+         
+        $user = New-Object System.Windows.Forms.Label
+        #$user.AutoSize = "True"
+        $user.Location = New-Object System.Drawing.Point(10,30)
+        $user.Size = New-Object System.Drawing.Size(280,20)
+        $user.Font = $font
+        $user.Text = "User : $env:username"
+        $form.Controls.Add($user)
+         
+        $ip = New-Object System.Windows.Forms.Label
+        #$ip.AutoSize = "True"
+        $ip.Location = New-Object System.Drawing.Point(10,70)
+        $ip.Size = New-Object System.Drawing.Size(280,20)
+        $ip.Font = $font
+        $ip.Text = "IP : $((Get-NetAdapter | Where-Object Status -EQ 'up' | Get-NetIPAddress -AddressFamily IPv4).IPAddress)"
+        $form.Controls.Add($ip)
+        
+        $mac = New-Object System.Windows.Forms.Label
+        #$mac.AutoSize = "True"
+        $mac.Location = New-Object System.Drawing.Point(10,50)
+        $mac.Size = New-Object System.Drawing.Size(280,20)
+        $mac.Font = $font
+        $mac.Text = "MAC : $((Get-NetAdapter | Where-Object Status -EQ 'UP').MacAddress)"
+        $form.Controls.Add($mac)
+         
+        $form.Topmost = $true
+         
+        $form.ShowDialog()
+    }
+
+if ($Action -eq 'Test Internet Connectivity') 
 {
 $Ping = Test-Connection "8.8.4.4" -Count 1 -Quiet
+Write-Output "Ping test to Google" | Tee-Object -FilePath $Logs -Append
+Write-Output "Result : $($Ping)" | Tee-Object -FilePath $Logs -Append
 if ($Ping -eq 'True')
         { 
-        [void][System.Windows.MessageBox]::Show("OK","Thx","OK","Information")
+        [void][System.Windows.MessageBox]::Show("OK","Thx","OK","Information") 
         }
     else 
         {
