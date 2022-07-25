@@ -59,6 +59,7 @@ $listBox.Height = 130
 [void] $listBox.Items.Add('Reset Network Configuration')
 [void] $listBox.Items.Add('Restart Microsoft Intune service')
 [void] $listBox.Items.Add('Launch Remote Control')
+[void] $listBox.Items.Add('Backup your data')
 [void] $listBox.Items.Add('Launch Antivirus Quick Scan')
 [void] $listBox.Items.Add('Launch Antivirus Full Scan')
 
@@ -174,11 +175,14 @@ if ($Action -eq 'Reset Network Configuration')
 if ($Action -eq 'Restart Microsoft Intune service')
     {
         Start-Process powershell "Net stop IntuneManagementExtension"
+        Write-Output "Stopping IntuneManagementExtension service" | Tee-Object -FilePath $Logs -Append
             Start-Sleep -s 5
         Start-Process powershell "Net start IntuneManagementExtension"
+        Write-Output "Starting IntuneManagementExtension service" | Tee-Object -FilePath $Logs -Append
             Start-Sleep -s 5
         #Check service status
         $Service = Get-Service | Where-Object { $_.Name -eq $serviceName }
+        Write-Output "$($ServiceName) is $($Service.status)" | Tee-Object -FilePath $Logs -Append
         if ($service.status -eq "Stopped")
             {
             [void] [System.Windows.MessageBox]::Show( "$($ServiceName) is not restarted, please contact your Administrator","Windows Intune Service", "OK", "Error" )
@@ -191,16 +195,19 @@ if ($Action -eq 'Restart Microsoft Intune service')
 
 if ($Action -eq 'Launch Remote Control')
     {
+        Write-Output "Launch $($Action)" | Tee-Object -FilePath $Logs -Append
         [system.Diagnostics.Process]::start("msra.exe")
     }
 
 if ($Action -eq 'Launch Antivirus Quick Scan')
     {
-        Start-Process powershell "Start-Mpscan -ScanType QuickScan"
+        Write-Output "Launch $($Action)" | Tee-Object -FilePath $Logs -Append
+        Start-Process powershell "Start-Mpscan -ScanType QuickScan" | Tee-Object -FilePath $Logs -Append
     }
 
 if ($Action -eq 'Launch Antivirus Full Scan')
     {
+        Write-Output "Launch $($Action)" | Tee-Object -FilePath $Logs -Append
         Start-Process powershell "Start-Mpscan -ScanType FullScan"
     }
 }
