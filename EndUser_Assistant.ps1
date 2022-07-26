@@ -66,13 +66,13 @@ $listBox.Height = 130
 
 [void] $listBox.Items.Add('Computer Information')
 [void] $listBox.Items.Add('Test Internet Connectivity')
-[void] $listBox.Items.Add('Clear DNS Cache')
+[void] $listBox.Items.Add('Clear Cache DNS')
 [void] $listBox.Items.Add('Reset Network Configuration')
 [void] $listBox.Items.Add('Restart Microsoft Intune service')
-[void] $listBox.Items.Add('Launch Remote Control')
+[void] $listBox.Items.Add('Run Remote Control')
 [void] $listBox.Items.Add('Backup your data')
-[void] $listBox.Items.Add('Launch Antivirus Quick Scan')
-[void] $listBox.Items.Add('Launch Antivirus Full Scan')
+[void] $listBox.Items.Add('Run Antivirus Quick Scan')
+[void] $listBox.Items.Add('Run Antivirus Full Scan')
 
 $form.Controls.Add($listBox)
 
@@ -168,7 +168,7 @@ if ($Ping -eq 'True')
         }
 }
 
-if ($Action -eq 'Clear DNS Cache')
+if ($Action -eq 'Clear Cache DNS')
     {
         Start-Process powershell "Clear-DnsClientCache"
             Start-Sleep -s 5
@@ -220,26 +220,26 @@ if ($Action -eq 'Backup your data')
     }
 
     #Data Backup
-    Write-Output "Ping test to Google" | Tee-Object -FilePath $Logs -Append
+    Write-Output "User Data Backup" | Tee-Object -FilePath $Logs -Append
     $Backup = Robocopy.exe $SourcedirectoryName $TargetdirectoryName /E
     Write-Output "$($Backup)" | Tee-Object -FilePath $Logs -Append
     }
 
-if ($Action -eq 'Launch Remote Control')
+if ($Action -eq 'Run Remote Control')
     {
-        Write-Output "Launch $($Action)" | Tee-Object -FilePath $Logs -Append
+        Write-Output "Run $($Action)" | Tee-Object -FilePath $Logs -Append
         [system.Diagnostics.Process]::start("msra.exe")
     }
 
-if ($Action -eq 'Launch Antivirus Quick Scan')
+if ($Action -eq 'Run Antivirus Quick Scan')
     {
-        Write-Output "Launch $($Action)" | Tee-Object -FilePath $Logs -Append
+        Write-Output "Run $($Action)" | Tee-Object -FilePath $Logs -Append
         Start-Process powershell "Start-Mpscan -ScanType QuickScan"
     }
 
-if ($Action -eq 'Launch Antivirus Full Scan')
+if ($Action -eq 'Run Antivirus Full Scan')
     {
-        Write-Output "Launch $($Action)" | Tee-Object -FilePath $Logs -Append
+        Write-Output "Run $($Action)" | Tee-Object -FilePath $Logs -Append
         Start-Process powershell "Start-Mpscan -ScanType FullScan"
     }
 }
