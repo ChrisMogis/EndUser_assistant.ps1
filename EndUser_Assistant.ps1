@@ -32,14 +32,25 @@ $form.Controls.Add($okButton)
 
 $LinkLabel = New-Object System.Windows.Forms.LinkLabel
 #$linkLabel.AutoSize = "True"
-$LinkLabel.Location = New-Object System.Drawing.Point(10,240)
-$LinkLabel.Size = New-Object System.Drawing.Size(280,20)
+$LinkLabel.Location = New-Object System.Drawing.Point(205,240)
+$LinkLabel.Size = New-Object System.Drawing.Size(80,20)
 $LinkLabel.Font = $font
 $LinkLabel.LinkColor = "BLUE"
 $LinkLabel.ActiveLinkColor = "RED"
 $LinkLabel.Text = "CCMTune.fr"
 $LinkLabel.add_Click({[system.Diagnostics.Process]::start("https://ccmtune.fr")})
 $Form.Controls.Add($LinkLabel)
+
+$LinkLabel2 = New-Object System.Windows.Forms.LinkLabel
+#$linkLabel.AutoSize = "True"
+$LinkLabel2.Location = New-Object System.Drawing.Point(10,240)
+$LinkLabel2.Size = New-Object System.Drawing.Size(280,20)
+$LinkLabel2.Font = $font
+$LinkLabel2.LinkColor = "BLUE"
+$LinkLabel2.ActiveLinkColor = "RED"
+$LinkLabel2.Text = "Logs"
+$LinkLabel2.add_Click({[system.Diagnostics.Process]::start($($Logs))})
+$Form.Controls.Add($LinkLabel2)
 
 $label = New-Object System.Windows.Forms.Label
 $label.Location = New-Object System.Drawing.Point(10,20)
@@ -84,12 +95,12 @@ if ($Action -eq 'Computer Information')
         $font = New-Object System.Drawing.Font("Time New Roman", 9)
         $form = New-Object System.Windows.Forms.Form
         $form.Text = 'Computer-Info'
-        $form.Size = New-Object System.Drawing.Size(345,245)
+        $form.Size = New-Object System.Drawing.Size(300,205)
         $form.StartPosition = 'CenterScreen'
         $form.Icon = $Ico
          
         $OKButton = New-Object System.Windows.Forms.Button
-        $OKButton.Location = New-Object System.Drawing.Point(120,150)
+        $OKButton.Location = New-Object System.Drawing.Point(105,120)
         $OKButton.Size = New-Object System.Drawing.Size(75,23)
         $OKButton.Text = 'OK'
         $OKButton.TextAlign = 'MiddleCenter'
@@ -193,6 +204,27 @@ if ($Action -eq 'Restart Microsoft Intune service')
             }
     }
 
+if ($Action -eq 'Backup your data')
+    {
+    #Variables
+    $Source = New-Object System.Windows.Forms.FolderBrowserDialog
+    if ($Source.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
+    $SourcedirectoryName = $Source.SelectedPath
+    Write-Host "Directory selected is $SourcedirectoryName"
+    }
+
+    $Target = New-Object System.Windows.Forms.FolderBrowserDialog
+    if ($Target.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
+    $TargetdirectoryName = $Target.SelectedPath
+    Write-Host "Directory selected is $TargetdirectoryName"
+    }
+
+    #Data Backup
+    Write-Output "Ping test to Google" | Tee-Object -FilePath $Logs -Append
+    $Backup = Robocopy.exe $SourcedirectoryName $TargetdirectoryName /E
+    Write-Output "$($Backup)" | Tee-Object -FilePath $Logs -Append
+    }
+
 if ($Action -eq 'Launch Remote Control')
     {
         Write-Output "Launch $($Action)" | Tee-Object -FilePath $Logs -Append
@@ -202,7 +234,7 @@ if ($Action -eq 'Launch Remote Control')
 if ($Action -eq 'Launch Antivirus Quick Scan')
     {
         Write-Output "Launch $($Action)" | Tee-Object -FilePath $Logs -Append
-        Start-Process powershell "Start-Mpscan -ScanType QuickScan" | Tee-Object -FilePath $Logs -Append
+        Start-Process powershell "Start-Mpscan -ScanType QuickScan"
     }
 
 if ($Action -eq 'Launch Antivirus Full Scan')
