@@ -68,7 +68,22 @@ $listBox.Height = 130
 [void] $listBox.Items.Add('Test Internet Connectivity')
 [void] $listBox.Items.Add('Clear Cache DNS')
 [void] $listBox.Items.Add('Reset Network Configuration')
-[void] $listBox.Items.Add('Restart Microsoft Intune service')
+#Intune Service
+$IntuneService = Get-Service -Name IntuneManagementExtension -ErrorAction SilentlyContinue
+if($IntuneService -eq $null)
+    {   
+    Write-Host "Service not available"
+    } else {
+    [void] $listBox.Items.Add('Restart Microsoft Intune service')
+    }
+#SCCM Service
+$IntuneService = Get-Service -Name "SMS Agent Host" -ErrorAction SilentlyContinue
+if($SCCMService -eq $null)
+    {   
+    Write-Host "Service not available"
+    } else {
+    [void] $listBox.Items.Add('Restart SCCM service')
+    }
 [void] $listBox.Items.Add('Run Remote Control')
 [void] $listBox.Items.Add('Backup your data')
 [void] $listBox.Items.Add('Run Antivirus Quick Scan')
@@ -206,6 +221,7 @@ if ($Action -eq 'Restart Microsoft Intune service')
 
 if ($Action -eq 'Backup your data')
 {
+    #Backup Source
     Add-Type -AssemblyName System.Windows.Forms
     $Source = New-Object System.Windows.Forms.FolderBrowserDialog
     $Source.Description = 'Select the folder containing the data'
@@ -216,7 +232,7 @@ if ($Action -eq 'Backup your data')
     } else {
         exit
     }
-    
+    #Backup Target
     Add-Type -AssemblyName System.Windows.Forms
     $Target = New-Object System.Windows.Forms.FolderBrowserDialog
     $Target.Description = 'Select the folder for backup'
@@ -229,9 +245,10 @@ if ($Action -eq 'Backup your data')
     }
     
     #Data Backup
-    Write-Output "Ping test to Google" | Tee-Object -FilePath $Logs -Append
-    $Backup = Robocopy.exe $SourceResult $TargetResult /E
-    Write-Output "$($Backup)" | Tee-Object -FilePath $Logs -Append
+    Write-Output "Backup user data" | Tee-Object -FilePath $Logs -Append
+    $CommandLine = "Robocopy $($SourceResult) $($TargetResult) /E /S"
+    Start-Process powershell.exe $CommandLine
+    Write-Output "Data copy : $($SourceResult) to $($TargetResult)" | Tee-Object -FilePath $Logs -Append
 }
 
 if ($Action -eq 'Run Remote Control')
