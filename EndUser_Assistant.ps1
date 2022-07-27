@@ -179,11 +179,11 @@ Write-Output "Ping test to Google" | Tee-Object -FilePath $Logs -Append
 Write-Output "Result : $($Ping)" | Tee-Object -FilePath $Logs -Append
 if ($Ping -eq 'True')
         { 
-        [void][System.Windows.MessageBox]::Show("OK","Thx","OK","Information") 
+        [void][System.Windows.MessageBox]::Show("Your internet connection is OK","Internet Test","OK","Information") 
         }
     else 
         {
-        [void][System.Windows.MessageBox]::Show("NOK","Thx","OK","Information")
+        [void][System.Windows.MessageBox]::Show("you have a problem with your internet connection. Please contact your System Administrator","Internet Test","OK","Error")
         }
 }
 
