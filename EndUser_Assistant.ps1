@@ -8,7 +8,8 @@ Invoke-WebRequest "https://raw.githubusercontent.com/ChrisMogis/O365-ManageCalen
 #Variables
 $Date = Get-Date
 $Logs = "C:\Tools_CCMTune\Logs\EndUserAssistant.log"
-$ServiceName = "IntuneManagementExtension"
+$ServiceName1 = "IntuneManagementExtension"
+$ServiceName2 = "SCCM Host Agent"
 $Ico = "C:\Tools_CCMTune\Tools\favicon-image.ico"
 
 #Listbox
@@ -64,30 +65,31 @@ $listBox.Size = New-Object System.Drawing.Size(455,40)
 #$listBox.FontSize = 10
 $listBox.Height = 130
 
-[void] $listBox.Items.Add('Computer Information')
-[void] $listBox.Items.Add('Test Internet Connectivity')
-[void] $listBox.Items.Add('Clear Cache DNS')
-[void] $listBox.Items.Add('Reset Network Configuration')
-#Intune Service
+#Build Menu
+[void] $listBox.Items.Add('TOOL - Computer Information')
+[void] $listBox.Items.Add('TOOL - Run Remote Control')
+[void] $listBox.Items.Add('TOOL - Backup your data')
+[void] $listBox.Items.Add('NETWORK - Test Internet Connectivity')
+[void] $listBox.Items.Add('NETWORK - Clear Cache DNS')
+[void] $listBox.Items.Add('NETWORK - Reset Network Configuration')
+#If Intune Service is available
 $IntuneService = Get-Service -Name IntuneManagementExtension -ErrorAction SilentlyContinue
-if($IntuneService -eq $null)
+if($IntuneService -eq $($null))
     {   
     Write-Host "Service not available"
     } else {
-    [void] $listBox.Items.Add('Restart Microsoft Intune service')
+    [void] $listBox.Items.Add('SERVICE - Restart Microsoft Intune service')
     }
-#SCCM Service
-$IntuneService = Get-Service -Name "SMS Agent Host" -ErrorAction SilentlyContinue
-if($SCCMService -eq $null)
+#If SCCM Service is available
+$SCCMService = Get-Service -Name "SMS Agent Host" -ErrorAction SilentlyContinue
+if($SCCMService -eq $($null))
     {   
     Write-Host "Service not available"
     } else {
-    [void] $listBox.Items.Add('Restart SCCM service')
+    [void] $listBox.Items.Add('SERVICE - Restart SCCM service')
     }
-[void] $listBox.Items.Add('Run Remote Control')
-[void] $listBox.Items.Add('Backup your data')
-[void] $listBox.Items.Add('Run Antivirus Quick Scan')
-[void] $listBox.Items.Add('Run Antivirus Full Scan')
+[void] $listBox.Items.Add('WIN DEFENDER - Run Antivirus Quick Scan')
+[void] $listBox.Items.Add('WIN DEFENDER - Run Antivirus Full Scan')
 
 $form.Controls.Add($listBox)
 
@@ -102,7 +104,8 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
     Write-Output "$($Date) : $($Action)" | Tee-Object -FilePath $Logs -Append
 
 #List of Actions
-if ($Action -eq 'Computer Information')
+#Option Computer Info
+if ($Action -eq 'TOOL - Computer Information')
     {
         Add-Type -AssemblyName System.Windows.Forms
         Add-Type -AssemblyName System.Drawing
@@ -168,7 +171,8 @@ if ($Action -eq 'Computer Information')
         $form.ShowDialog()
     }
 
-if ($Action -eq 'Test Internet Connectivity') 
+#Option Internet Test
+if ($Action -eq 'NETWORK - Test Internet Connectivity') 
 {
 $Ping = Test-Connection "8.8.4.4" -Count 1 -Quiet
 Write-Output "Ping test to Google" | Tee-Object -FilePath $Logs -Append
@@ -183,14 +187,16 @@ if ($Ping -eq 'True')
         }
 }
 
-if ($Action -eq 'Clear Cache DNS')
+#Option Clear Cache DNS
+if ($Action -eq 'NETWORK - Clear Cache DNS')
     {
         Start-Process powershell "Clear-DnsClientCache"
             Start-Sleep -s 5
         [void] [System.Windows.MessageBox]::Show( "Your DNS cache has been reinitialized", "DNS cache reseted", "OK", "Information" )
     }
 
-if ($Action -eq 'Reset Network Configuration')
+#Option Reset Network configuration
+if ($Action -eq 'NETWORK - Reset Network Configuration')
     {
         Start-Process powershell "ipconfig /release"
         Start-Process powershell "ipconfig /renew"
@@ -198,18 +204,19 @@ if ($Action -eq 'Reset Network Configuration')
         [void] [System.Windows.MessageBox]::Show( "Your network configuration has been reseted", "Network configuration reseted", "OK", "Information" )
     }
 
-if ($Action -eq 'Restart Microsoft Intune service')
+#Option Restart Microsoft Intune service
+if ($Action -eq 'SERVICE - Restart Microsoft Intune service')
     {
-        Start-Process powershell "Net stop IntuneManagementExtension"
-        Write-Output "Stopping IntuneManagementExtension service" | Tee-Object -FilePath $Logs -Append
+        Start-Process powershell "Net stop $ServiceName1"
+        Write-Output "Stopping $ServiceName1 service" | Tee-Object -FilePath $Logs -Append
             Start-Sleep -s 5
-        Start-Process powershell "Net start IntuneManagementExtension"
-        Write-Output "Starting IntuneManagementExtension service" | Tee-Object -FilePath $Logs -Append
+        Start-Process powershell "Net start $ServiceName1"
+        Write-Output "Starting $ServiceName1 service" | Tee-Object -FilePath $Logs -Append
             Start-Sleep -s 5
         #Check service status
-        $Service = Get-Service | Where-Object { $_.Name -eq $serviceName }
-        Write-Output "$($ServiceName) is $($Service.status)" | Tee-Object -FilePath $Logs -Append
-        if ($service.status -eq "Stopped")
+        $Service1 = Get-Service | Where-Object { $_.Name -eq $ServiceName1 }
+        Write-Output "$($ServiceName) is $($Service1.status)" | Tee-Object -FilePath $Logs -Append
+        if ($Service1.status -eq "Stopped")
             {
             [void] [System.Windows.MessageBox]::Show( "$($ServiceName) is not restarted, please contact your Administrator","Windows Intune Service", "OK", "Error" )
             }
@@ -219,7 +226,30 @@ if ($Action -eq 'Restart Microsoft Intune service')
             }
     }
 
-if ($Action -eq 'Backup your data')
+#Option Restart SCCM service
+if ($Action -eq 'SERVICE - Restart SCCM service')
+    {
+        Start-Process powershell "Net stop SCCM Host Agent"
+        Write-Output "Stopping SCCM Host Agent service" | Tee-Object -FilePath $Logs -Append
+            Start-Sleep -s 5
+        Start-Process powershell "Net start SCCM Host Agent"
+        Write-Output "Starting SCCM Host Agent service" | Tee-Object -FilePath $Logs -Append
+            Start-Sleep -s 5
+        #Check service status
+        $service2 = Get-Service | Where-Object { $_.Name -eq $ServiceName2 }
+        Write-Output "$($ServiceName2) is $($service2.status)" | Tee-Object -FilePath $Logs -Append
+        if ($service2.status -eq "Stopped")
+            {
+            [void] [System.Windows.MessageBox]::Show( "$($ServiceName2) is not restarted, please contact your Administrator","Windows Intune Service", "OK", "Error" )
+            }
+        else 
+            {       
+            [void] [System.Windows.MessageBox]::Show( "$($ServiceName2) is started","Windows Intune Service", "OK", "Information" )
+            }
+    }
+
+#Option Backup Data User
+if ($Action -eq 'TOOL - Backup your data')
 {
     #Backup Source
     Add-Type -AssemblyName System.Windows.Forms
@@ -251,19 +281,22 @@ if ($Action -eq 'Backup your data')
     Write-Output "Data copy : $($SourceResult) to $($TargetResult)" | Tee-Object -FilePath $Logs -Append
 }
 
-if ($Action -eq 'Run Remote Control')
+#Option Remote Control with Microsoft Tool
+if ($Action -eq 'TOOL - Run Remote Control')
     {
         Write-Output "Run $($Action)" | Tee-Object -FilePath $Logs -Append
         [system.Diagnostics.Process]::start("msra.exe")
     }
 
-if ($Action -eq 'Run Antivirus Quick Scan')
+#Option Windows Defender Quick Scan
+if ($Action -eq 'WIN DEFENDER - Run Antivirus Quick Scan')
     {
         Write-Output "Run $($Action)" | Tee-Object -FilePath $Logs -Append
         Start-Process powershell "Start-Mpscan -ScanType QuickScan"
     }
 
-if ($Action -eq 'Run Antivirus Full Scan')
+#Option Windows Defender Full Scan
+if ($Action -eq 'WIN DEFENDER - Run Antivirus Full Scan')
     {
         Write-Output "Run $($Action)" | Tee-Object -FilePath $Logs -Append
         Start-Process powershell "Start-Mpscan -ScanType FullScan"
