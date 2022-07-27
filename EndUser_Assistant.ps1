@@ -205,25 +205,34 @@ if ($Action -eq 'Restart Microsoft Intune service')
     }
 
 if ($Action -eq 'Backup your data')
-    {
-    #Variables
+{
+    Add-Type -AssemblyName System.Windows.Forms
     $Source = New-Object System.Windows.Forms.FolderBrowserDialog
-    if ($Source.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
-    $SourcedirectoryName = $Source.SelectedPath
-    Write-Host "Directory selected is $SourcedirectoryName"
+    $Source.Description = 'Select the folder containing the data'
+    $result = $Source.ShowDialog((New-Object System.Windows.Forms.Form -Property @{TopMost = $true }))
+    if ($result -eq [Windows.Forms.DialogResult]::OK){
+        $Source.SelectedPath
+        $SourceResult = $Source.SelectedPath
+    } else {
+        exit
     }
-
+    
+    Add-Type -AssemblyName System.Windows.Forms
     $Target = New-Object System.Windows.Forms.FolderBrowserDialog
-    if ($Target.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
-    $TargetdirectoryName = $Target.SelectedPath
-    Write-Host "Directory selected is $TargetdirectoryName"
+    $Target.Description = 'Select the folder for backup'
+    $result = $Target.ShowDialog((New-Object System.Windows.Forms.Form -Property @{TopMost = $true }))
+    if ($result -eq [Windows.Forms.DialogResult]::OK){
+        $Target.SelectedPath
+        $TargetResult = $Target.SelectedPath
+    } else {
+        exit
     }
-
+    
     #Data Backup
-    Write-Output "User Data Backup" | Tee-Object -FilePath $Logs -Append
-    $Backup = Robocopy.exe $SourcedirectoryName $TargetdirectoryName /E
+    Write-Output "Ping test to Google" | Tee-Object -FilePath $Logs -Append
+    $Backup = Robocopy.exe $SourceResult $TargetResult /E
     Write-Output "$($Backup)" | Tee-Object -FilePath $Logs -Append
-    }
+}
 
 if ($Action -eq 'Run Remote Control')
     {
